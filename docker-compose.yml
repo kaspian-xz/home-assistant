@@ -1,0 +1,37 @@
+version: '2'
+
+services:
+  db:
+    image: mysql
+    ports:
+    - "3307:3306"
+    environment:
+      MYSQL_DATABASE: hass
+      MYSQL_USER: hass
+      MYSQL_PASSWORD: hass
+      MYSQL_ROOT_PASSWORD: hass
+    volumes:
+    - ${WORKDIR}/mysql/data/:/var/lib/mysql
+    - ${WORKDIR}/mysql/init.db/:/docker-entrypoint-initdb.d
+
+  mqtt:
+    image: toke/mosquitto
+    ports:
+    - "1883:1883"
+    - "9001:9001"
+    volumes:
+    - ${WORKDIR}/mqtt:/mqtt/data
+
+  hass:
+    build: hass
+    ports:
+    - "8123:8123"
+    depends_on:
+    - mqtt
+    - db
+    links:
+    - mqtt
+    - db
+    volumes:
+    - ${WORKDIR}/hass:/config/
+
